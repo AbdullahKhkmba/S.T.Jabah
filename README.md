@@ -16,38 +16,19 @@ A layered architecture emergency response system that coordinates between Contro
 
 The system follows a seven-step sequence from incident reporting to resolution:
 
-### 1. **Incident Reporting & Creation**
-Field personnel provide incident coordinates `(x, y)` to the Control Room operator, who creates the incident in the system.
-
-**API**: `POST /cr/incidents`
-
-### 2. **Dispatch**
-Control Room operator assigns the incident to specific ERT vehicles that are available and suitable for the emergency.
-
-**API**: `POST /cr/incidents/<id>/dispatch`
-
-### 3. **Acknowledgment**
-ERT vehicles receive the incident notification and acknowledge the task, signaling that they are en route to the incident location.
-
-**API**: `PATCH /ert/units/<unit_id>/acknowledge`
-
-### 4. **Path Computation**
-Each ERT vehicle computes its optimal path from its current location to the incident coordinates `(x, y)` using its own path-finding algorithm.
-
-**Note**: This is handled internally by each vehicle's path computation service.
-
-### 5. **Live Tracking**
-ERT vehicles continuously stream their GPS coordinates `(x, y)` back to the Control Room for real-time monitoring and coordination.
-
-**API**: `POST /ert/units/<unit_id>/location`
-
-### 6. **Unit Resolution**
-Once the emergency work is completed, the ERT vehicle sends a "Resolve" signal indicating its task is done.
-
-**API**: `PATCH /ert/units/<unit_id>/resolve`
-
-### 7. **System Resolution**
-The system automatically checks all assigned units for the incident. When the last unit resolves, the incident is automatically marked as "Resolved" in the database, completing the workflow.
+1. **Incident Reporting & Creation**: Field personnel provide incident coordinates `(x, y)` to the Control Room operator, who creates the incident in the system.
+  - **API**: `POST /cr/incidents`
+2. **Dispatch**: Control Room operator assigns the incident to specific ERT vehicles that are available and suitable for the emergency.
+  - **API**: `POST /cr/incidents/<id>/dispatch`
+3. **Acknowledgment**: ERT vehicles receive the incident notification and acknowledge the task, signaling that they are en route to the incident location.
+  - **API**: `PATCH /ert/units/<unit_id>/acknowledge`
+4. **Path Computation**: Each ERT vehicle computes its optimal path from its current location to the incident coordinates `(x, y)` using its own path-finding algorithm.
+  - **Note**: This is handled internally by each vehicle's path computation service.
+5. **Live Tracking**: ERT vehicles continuously stream their GPS coordinates `(x, y)` back to the Control Room for real-time monitoring and coordination.
+  - **API**: `POST /ert/units/<unit_id>/location`
+6. **Unit Resolution**: Once the emergency work is completed, the ERT vehicle sends a "Resolve" signal indicating its task is done.
+  - **API**: `PATCH /ert/units/<unit_id>/resolve`
+7. **System Resolution**: The system automatically checks all assigned units for the incident. When the last unit resolves, the incident is automatically marked as "Resolved" in the database, completing the workflow.
 
 **Note**: This is handled automatically by the service layer.
 
@@ -80,7 +61,7 @@ The system follows a **layered architecture** pattern with clear separation of c
 
 ┌─────────────────────────────────────────────────────┐
 │            Communication Module                     │
-│    (Abstracted Channel - WebSocket/Polling/SIM)    │
+│    (Abstracted Channel - WebSocket/Polling/SIM)     │
 └─────────────────────────────────────────────────────┘
 ```
 
