@@ -1,53 +1,72 @@
 """Data access layer for ERT unit persistence"""
 
 from ert.model.unit import Unit
+from abc import ABC, abstractmethod
+from typing import TypeVar, Optional, List
 
+T = TypeVar('T')
 
-class UnitRepository:
-    """Repository for unit data operations"""
+# This is an abstract repository interface for unit data operations.
+class UnitRepository(ABC):
+    """Abstract base repository interface defining common CRUD operations for Units"""
+    @abstractmethod
+    def create(self, entity: T) -> T:
+        """
+        Create a new unit in the database
+        
+        Args:
+            entity: Unit object to create
+        
+        Returns:
+            Created unit with ID
+        """
+        pass
     
-    def get_by_id(self, unit_id: str) -> Unit:
+    @abstractmethod
+    def get_by_id(self, entity_id: str) -> Optional[T]:
         """
         Retrieve unit by ID
         
         Args:
-            unit_id: ID of the unit
-        
+            entity_id: ID of the unit
         Returns:
             Unit object or None if not found
         """
         pass
-    
-    def update(self, unit: Unit) -> Unit:
+
+    @abstractmethod
+    def update(self, entity: T) -> T:
         """
         Update unit in the database
         
         Args:
-            unit: Unit object with updates
+            entity: Unit object with updates
         
         Returns:
             Updated unit
         """
         pass
-    
-    def update_location(self, unit_id: str, coordinates: tuple):
+
+    @abstractmethod
+    def delete(self, entity_id: str) -> bool:
         """
-        Update unit's current location
+        Delete unit by ID
         
         Args:
-            unit_id: ID of the unit
-            coordinates: Tuple of (x, y) coordinates
-        """
-        pass
-    
-    def get_assigned_incidents(self, unit_id: str) -> list:
-        """
-        Get all incidents assigned to a unit
-        
-        Args:
-            unit_id: ID of the unit
+            entity_id: ID of the unit to delete
         
         Returns:
-            List of incident IDs
+            True if deleted, False otherwise
         """
         pass
+    
+    @abstractmethod
+    def list_all(self) -> List[T]:
+        """
+        List all units in the database
+        
+        Returns:
+            List of all unit objects
+        """
+        pass
+    

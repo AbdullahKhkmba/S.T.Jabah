@@ -23,14 +23,7 @@ class IncidentService:
         Returns:
             Created incident object
         """
-        # Dummy implementation for testing
-        incident_id = str(uuid.uuid4())
-        incident = Incident(
-            id=incident_id,
-            coordinates=coordinates,
-            status=IncidentStatus.CREATED
-        )
-        return incident 
+        pass
     
     def dispatch_incident(self, incident_id: str, unit_ids: list):
         """
