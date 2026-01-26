@@ -1,3 +1,4 @@
+"""In-memory implementation of Incident repository (for testing/development)"""
 from abc import abstractmethod
 from typing import Optional, List
 from control_room.model.incident import Incident
@@ -20,7 +21,8 @@ class InMemoryIncidentRepository(IncidentRepository):
         Returns:
             Created entity with ID
         """
-        pass
+        self._storage[entity.id] = entity
+        return entity
 
     def get_by_id(self, entity_id: str) -> Optional[Incident]:
         """
@@ -65,4 +67,4 @@ class InMemoryIncidentRepository(IncidentRepository):
         Returns:
             List of all entities
         """
-        pass
+        return list(self._storage.values())
