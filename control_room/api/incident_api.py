@@ -1,10 +1,8 @@
 """API handlers for Control Room incident endpoints"""
-from control_room.model.incident import Incident
 from flask import Blueprint, request, jsonify
 import logging
-from control_room.repository.in_memory_incident_repository import InMemoryIncidentRepository
 from control_room.service.incident_service import IncidentService
-from control_room.model.incident import Incident
+from communication.channel import CommunicationChannel
 
 logger = logging.getLogger(__name__)
 
@@ -82,3 +80,22 @@ def create_incident():
         return jsonify({
             'error': 'Internal server error'
         }), 500
+    
+@control_room_bp.route('/incidents/<incident_id>', methods=['DELETE'])
+def delete_incident(incident_id):
+    """
+    Delete an incident from the system
+    
+    Args:
+        incident_id: The unique identifier of the incident to delete
+    
+    Returns:
+        200: Incident deleted successfully with success message
+        404: Incident not found with error message
+    """
+    deleted = control_room_bp.incident_service.delete_incident(incident_id)
+    
+    if not deleted:
+        return jsonify({"error": "Incident not found"}), 404
+    
+    return jsonify({"message": "Incident deleted successfully"}), 200

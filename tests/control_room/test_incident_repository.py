@@ -61,6 +61,5 @@ class TestIncidentRepository(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.id, "INC-002")
 
-
 if __name__ == '__main__':
     unittest.main()
