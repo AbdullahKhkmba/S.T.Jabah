@@ -64,7 +64,10 @@ class InMemoryIncidentRepository(IncidentRepository):
         Returns:
             True if deleted, False otherwise
         """
-        pass
+        if entity_id in self._storage:
+            del self._storage[entity_id]
+            return True
+        return False
     
     def get_all(self) -> Incident:
         """

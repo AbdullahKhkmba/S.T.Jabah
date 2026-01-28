@@ -86,3 +86,15 @@ class IncidentService:
         Get all incidents with optional status filtering
         """
         return self.incident_repository.get_all()
+    
+    def delete_incident(self, incident_id: str) -> bool:
+        """
+        Delete an incident from the system
+        
+        Args:
+            incident_id: The unique identifier of the incident to delete
+            
+        Returns:
+            True if incident was deleted successfully, False if incident was not found
+        """
+        return self.incident_repository.delete(incident_id)
