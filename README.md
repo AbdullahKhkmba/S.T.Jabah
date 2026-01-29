@@ -375,3 +375,21 @@ _Error - Not Found (404):_
   "error": "Incident not found"
 }
 ```
+---
+## Setup Instructions
+- Clone the repository and navigate to project directory
+  ```bash
+  git clone git@github.com:Shaker-10/S.T.Jabah.git
+  ```
+- Install uv package manager
+  ```bash
+  pip install uv
+  ```
+- If not sure if you have it
+  ```bash
+  uv --version
+  ```
+- Run application
+  ```bash
+  uv run python main.py
+  ```
