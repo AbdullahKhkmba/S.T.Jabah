@@ -39,6 +39,6 @@ class Incident:
             'x': self.x,
             'y': self.y,
             'status': self.status.value,
-            'created_at': self.created_at,
-            'resolved_at': self.resolved_at
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None
         }
