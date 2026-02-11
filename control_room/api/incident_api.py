@@ -1,6 +1,7 @@
 """API handlers for Control Room incident endpoints"""
 from flask import Blueprint, request, jsonify
 import logging
+import asyncio
 from control_room.service.incident_service import IncidentService
 
 logger = logging.getLogger(__name__)
@@ -149,6 +150,7 @@ def update_incident(incident_id):
 def dispatch_incident(incident_id):
     """
     Dispatch an incident to the Emergency Response Team (ERT)
+    Following Golden Rule: API calls Service Layer method which handles WebSocket publishing
     
     Args:
         incident_id: The unique identifier of the incident to dispatch
@@ -156,9 +158,11 @@ def dispatch_incident(incident_id):
     Returns:
         200: Incident dispatched successfully with incident data
         404: Incident not found with error message
+        500: Internal server error
     """
     try:
-        incident = control_room_bp.incident_service.dispatch_incident(incident_id)
+        # First get the incident to verify it exists
+        incident = control_room_bp.incident_service.get_incident_by_id(incident_id)
         
         if incident is None:
             return jsonify({
@@ -166,7 +170,40 @@ def dispatch_incident(incident_id):
                 'incident_id': incident_id
             }), 404
         
-        return jsonify(incident.to_dict()), 200
+        # Run the async dispatch method
+        # Create a new event loop for this request
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            success = loop.run_until_complete(
+                control_room_bp.incident_service.dispatch_incident(incident_id)
+            )
+            loop.close()
+        except RuntimeError:
+            # If there's already an event loop, use it
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If loop is running, we need to use a different approach
+                # This shouldn't happen in normal Flask operation
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as pool:
+                    future = pool.submit(asyncio.run, 
+                        control_room_bp.incident_service.dispatch_incident(incident_id))
+                    success = future.result()
+            else:
+                success = loop.run_until_complete(
+                    control_room_bp.incident_service.dispatch_incident(incident_id)
+                )
+        
+        if success:
+            return jsonify({
+                'message': 'Incident dispatched successfully',
+                'incident': incident.to_dict()
+            }), 200
+        else:
+            return jsonify({
+                'error': 'Failed to dispatch incident'
+            }), 500
     
     except Exception as e:
         logger.error(f"Error dispatching incident {incident_id}: {str(e)}")
