@@ -218,3 +218,22 @@ def dispatch_incident(incident_id):
         return jsonify({
             'error': 'Internal server error'
         }), 500
+    
+# Add endpoint that return running incident (it is always one or zero)
+# This endpoint will be used by control room frontend to show current location of the incident and assigned units
+@control_room_bp.route('/incidents/open', methods=['GET'])
+def get_open_incidents():
+    try:
+        open_incidents = control_room_bp.incident_service.get_open_incidents()
+        open_incidents_data = [incident.to_dict() for incident in open_incidents]
+        
+        if not open_incidents_data:
+            return jsonify({}), 200  # Return empty JSON if no open incidents
+        
+        return jsonify(open_incidents_data[0]), 200
+        
+    except Exception as e:
+        logger.error(f"Error retrieving open incidents: {str(e)}")
+        return jsonify({
+            'error': 'Internal server error'
+        }), 500
