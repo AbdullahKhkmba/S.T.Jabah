@@ -13,9 +13,12 @@ from flask import Flask
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from control_room.repository.in_memory_incident_repository import InMemoryIncidentRepository
+from control_room.repository.in_memory_unit_repository import InMemoryUnitRepository
 from control_room.service.incident_service import IncidentService
+from control_room.service.unit_service import UnitService
 from control_room.api.incident_api import control_room_bp, init_control_room_api
 from communication.websocket_communication import WebSocketCommunication
+from communication.websocket_handlers import WebSocketHandlers
 
 # Configure logging
 logging.basicConfig(
@@ -31,6 +34,8 @@ class ControlRoomApplication:
     def __init__(self):
         # Initialize repositories
         self.incident_repository = InMemoryIncidentRepository()
+        # Unit repository + service (used by websocket handlers)
+        self.unit_repository = InMemoryUnitRepository()
         
         # Initialize communication channel
         self.communication_channel = WebSocketCommunication()
@@ -39,6 +44,18 @@ class ControlRoomApplication:
         self.incident_service = IncidentService(
             incident_repository=self.incident_repository,
             communication_channel=self.communication_channel
+        )
+
+        # Unit service used by handlers (optional for IncidentService)
+        self.unit_service = UnitService(
+            unit_repository=self.unit_repository,
+            communication_channel=self.communication_channel
+        )
+
+        # Handlers for websocket topics
+        self.websocket_handlers = WebSocketHandlers(
+            incident_repository=self.incident_repository,
+            unit_service=self.unit_service
         )
         
         # Create Flask app
@@ -50,7 +67,7 @@ class ControlRoomApplication:
         app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
         
         logger.info("📋 Registering Control Room blueprints...")
-        control_room_bp_instance = init_control_room_api(self.incident_service)
+        control_room_bp_instance = init_control_room_api(self.incident_service, self.unit_service)
         app.register_blueprint(control_room_bp_instance, url_prefix='/cr')
         
         # Health check endpoint
@@ -76,18 +93,18 @@ class ControlRoomApplication:
             await self.communication_channel.connect("ws://localhost:8765")
             
             logger.info("📡 Setting up WebSocket subscriptions...")
-            # Subscribe to ERT messages using callbacks from Service Layer
+            # Subscribe to ERT messages using callbacks from websocket handlers
             await self.communication_channel.subscribe(
-                "location", 
-                self.incident_service.handle_location
+                "location",
+                self.websocket_handlers.handle_location
             )
             await self.communication_channel.subscribe(
-                "acknowledgment", 
-                self.incident_service.handle_acknowledgment
+                "acknowledgment",
+                self.websocket_handlers.handle_acknowledgment
             )
             await self.communication_channel.subscribe(
-                "resolution", 
-                self.incident_service.handle_resolution
+                "resolution",
+                self.websocket_handlers.handle_resolution
             )
             
             logger.info("✓ Control Room ready for incident dispatching")

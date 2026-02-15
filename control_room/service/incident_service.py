@@ -139,12 +139,3 @@ class IncidentService:
         )
 
         return True
-
-    async def handle_location(self, data:dict):
-        print(f"[Control Room] 📍 Vehicle Location: {data}")
-
-    async def handle_acknowledgment(self, data:dict):
-        print(f"[Control Room] ✅ Acknowledgment: {data}")
-
-    async def handle_resolution(self, data:dict):
-        print(f"[Control Room] 🎉 Resolution: {data}")

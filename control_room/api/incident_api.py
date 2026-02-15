@@ -3,14 +3,16 @@ from flask import Blueprint, request, jsonify
 import logging
 import asyncio
 from control_room.service.incident_service import IncidentService
+from control_room.service.unit_service import UnitService
 
 logger = logging.getLogger(__name__)
 
 control_room_bp = Blueprint('control_room', __name__)
 
-def init_control_room_api(incident_service: IncidentService):
+def init_control_room_api(incident_service: IncidentService, unit_service: UnitService):
     """Initialize the Control Room API with service dependencies"""
     control_room_bp.incident_service = incident_service
+    control_room_bp.unit_service = unit_service
     return control_room_bp
 
 @control_room_bp.route('/incidents/<incident_id>', methods=['GET'])
@@ -154,32 +156,25 @@ def update_incident(incident_id):
             'error': 'Internal server error'
         }), 500
     
-@control_room_bp.route('/incidents/<incident_id>/dispatch', methods=['POST'])
-def dispatch_incident(incident_id):
+@control_room_bp.route('/incidents/dispatch', methods=['POST'])
+def dispatch_incident():
     """
-    Dispatch an incident to the Emergency Response Team (ERT)
-    Following Golden Rule: API calls Service Layer method which handles WebSocket publishing
-    
-    Args:
-        incident_id: The unique identifier of the incident to dispatch
-    
-    Returns:
-        200: Incident dispatched successfully with incident data
-        404: Incident not found with error message
-        500: Internal server error
+    Dispatch the currently running incident to the Emergency Response Team (ERT).
+
+    Behavior:
+    - If there is no running (open) incident, return 400.
+    - Otherwise dispatch the single running incident and return 200.
     """
     try:
-        # First get the incident to verify it exists
-        incident = control_room_bp.incident_service.get_incident_by_id(incident_id)
-        
-        if incident is None:
-            return jsonify({
-                'error': 'Incident not found',
-                'incident_id': incident_id
-            }), 404
-        
+        open_incidents = control_room_bp.incident_service.get_open_incidents()
+
+        if not open_incidents:
+            return jsonify({'error': 'No running incident to dispatch'}), 400
+
+        incident = open_incidents[0]
+        incident_id = incident.id
+
         # Run the async dispatch method
-        # Create a new event loop for this request
         try:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
@@ -191,18 +186,16 @@ def dispatch_incident(incident_id):
             # If there's already an event loop, use it
             loop = asyncio.get_event_loop()
             if loop.is_running():
-                # If loop is running, we need to use a different approach
-                # This shouldn't happen in normal Flask operation
                 import concurrent.futures
                 with concurrent.futures.ThreadPoolExecutor() as pool:
-                    future = pool.submit(asyncio.run, 
+                    future = pool.submit(asyncio.run,
                         control_room_bp.incident_service.dispatch_incident(incident_id))
                     success = future.result()
             else:
                 success = loop.run_until_complete(
                     control_room_bp.incident_service.dispatch_incident(incident_id)
                 )
-        
+
         if success:
             return jsonify({
                 'message': 'Incident dispatched successfully',
@@ -212,12 +205,10 @@ def dispatch_incident(incident_id):
             return jsonify({
                 'error': 'Failed to dispatch incident'
             }), 500
-    
+
     except Exception as e:
-        logger.error(f"Error dispatching incident {incident_id}: {str(e)}")
-        return jsonify({
-            'error': 'Internal server error'
-        }), 500
+        logger.error(f"Error dispatching incident: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
     
 # Add endpoint that return running incident (it is always one or zero)
 # This endpoint will be used by control room frontend to show current location of the incident and assigned units
@@ -234,6 +225,32 @@ def get_open_incidents():
         
     except Exception as e:
         logger.error(f"Error retrieving open incidents: {str(e)}")
+        return jsonify({
+            'error': 'Internal server error'
+        }), 500
+    
+# Add endpoint to get assigned units info for the running incident (it is always one or zero)
+@control_room_bp.route('/units/open_incident', methods=['GET'])
+def get_units_for_open_incident():
+    try:
+        open_incidents = control_room_bp.incident_service.get_open_incidents()
+        
+        if not open_incidents:
+            return jsonify({}), 200  # Return empty JSON if no open incidents
+        
+        incident = open_incidents[0]
+        assigned_units = incident.assigned_units
+        # show all the info of the assigned units from the unit service
+        assigned_units_info = []
+        for unit_id in assigned_units:
+            unit = control_room_bp.unit_service.get_unit_by_id(unit_id)
+            if unit:
+                assigned_units_info.append(unit.to_dict())
+        
+        return jsonify(assigned_units_info), 200
+            
+    except Exception as e:
+        logger.error(f"Error retrieving assigned units for open incident: {str(e)}")
         return jsonify({
             'error': 'Internal server error'
         }), 500

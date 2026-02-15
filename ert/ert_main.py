@@ -6,30 +6,28 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from communication.websocket_communication import WebSocketCommunication
-
-# ERT Configuration
-ERT_ID = "ERT-001"  # Unique identifier for this ERT unit
-
+ert_id = "ERT-001"  # Example ERT ID, can be passed as an argument or configured
 # --- Callbacks ---
 async def on_new_incident(data):
     """Handle incoming incident from control room"""
-    print(f"\n[ERT-{ERT_ID}] 🚨 RECEIVED INCIDENT: {data}")
-    print(f"[ERT-{ERT_ID}] Preparing vehicle...")
+    print(f"\n[ERT-{ert_id}] 🚨 RECEIVED INCIDENT: {data}")
+    print(f"[ERT-{ert_id}] Preparing vehicle...")
     
     # Extract incident ID
     incident_id = data.get('id', 'unknown')
     
     # Send acknowledgment to control room
-    # Acknowledgment contains: ERT id, incident id, and success message
     acknowledgment = {
-        "ert_id": ERT_ID,
+        "ert_id": ert_id,
         "incident_id": incident_id,
+        "x": 100,
+        "y": 200,
         "message": "Incident received successfully. ERT unit dispatched.",
         "status": "acknowledged"
     }
     
     await ert_comms.publish("acknowledgment", acknowledgment)
-    print(f"[ERT-{ERT_ID}] ✅ Acknowledgment sent to control room")
+    print(f"[ERT-{ert_id}] ✅ Acknowledgment sent to control room")
 
 # --- Main ERT Logic ---
 ert_comms = WebSocketCommunication()
@@ -37,26 +35,26 @@ ert_comms = WebSocketCommunication()
 async def main():
     # 1. Connect to Hub (Replace localhost with Control Room Domain/IP)
     await ert_comms.connect("ws://localhost:8765")
-    print(f"[ERT-{ERT_ID}] Connected to control room hub")
+    print(f"[ERT-{ert_id}] Connected to control room hub")
     
-    # 2. Subscribe to Incidents
+    # 2. Subscribe to Incidents (wrap callback with ert_id)
     await ert_comms.subscribe("new_incident", on_new_incident)
-    print(f"[ERT-{ERT_ID}] Subscribed to incident notifications")
+    print(f"[ERT-{ert_id}] Subscribed to incident notifications")
     
     # 3. Simulation Loop (sending location updates)
     while True:
         # Simulate GPS coordinates
         location_data = {
-            "ert_id": ERT_ID,
+            "ert_id": ert_id,
             "lat": 30.0444, 
             "lng": 31.2357, 
             "speed": 60
         }
         
-        print(f"[ERT-{ERT_ID}] Sending Location...")
+        print(f"[ERT-{ert_id}] Sending Location...")
         await ert_comms.publish("location", location_data)
         
-        await asyncio.sleep(5) # Send every 5 seconds
+        await asyncio.sleep(5)  # Send every 5 seconds
 
 if __name__ == "__main__":
     asyncio.run(main())
