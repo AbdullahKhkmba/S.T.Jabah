@@ -62,7 +62,8 @@ class WebSocketCommunication(Communication):
                 if topic in self.subscriptions:
                     for cb in self.subscriptions[topic]:
                         if asyncio.iscoroutinefunction(cb):
-                            await cb(payload)
+                            # Schedule coroutine callback as a task to avoid 'never awaited' warning
+                            asyncio.create_task(cb(payload))
                         else:
                             cb(payload)
         except Exception as e:

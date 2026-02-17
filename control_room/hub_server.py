@@ -43,7 +43,7 @@ async def handler(websocket):
                         await subscriber.send(response)
 
     except websockets.exceptions.ConnectionClosed:
-        print("Client disconnected")
+        print(f"Client disconnected: {websocket.remote_address}")
     finally:
         # Cleanup
         connected_clients.remove(websocket)
