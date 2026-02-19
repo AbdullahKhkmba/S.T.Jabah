@@ -14,6 +14,19 @@ class WebSocketHandlers:
 
     async def handle_location(self, data: dict):
         print(f"[Control Room] 📍 Vehicle Location: {data}")
+        ert_id = data.get("ert_id")
+        x = data.get("x")
+        y = data.get("y")
+        # Update unit location in repository if unit service is available
+        if self.unit_service:
+            try:
+                unit = self.unit_service.get_unit_by_id(ert_id)
+                if unit:
+                    unit.x = x
+                    unit.y = y
+                    self.unit_service.update_unit(unit)
+            except Exception as e:
+                print(f"[Control Room] ❌ Failed to update location for {ert_id}: {e}")
 
     async def handle_acknowledgment(self, data: dict):
         print(f"[Control Room] ✅ Acknowledgment: {data}")
