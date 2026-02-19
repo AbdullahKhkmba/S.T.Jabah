@@ -1,8 +1,15 @@
-"""Data models for incidents"""
+"""Data models for units"""
 
 from enum import Enum
 from datetime import datetime
 from typing import Optional
+
+class UnitStatus(Enum):
+    """Unit status enumeration"""
+    ACTIVE = "active"
+    RESOLVED = "resolved"
+    UNAVAILABLE = "unavailable"
+
 
 class Unit:
     """Unit model"""
@@ -11,11 +18,13 @@ class Unit:
         self, 
         id: str,
         x: float,
-        y: float
+        y: float,
+        status: 'UnitStatus' = None
     ):
         self.id = id
         self.x = x
         self.y = y
+        self.status = status or UnitStatus.ACTIVE
 
 
     def to_dict(self) -> dict:
@@ -23,5 +32,6 @@ class Unit:
         return {
             'id': self.id,
             'x': self.x,
-            'y': self.y
+            'y': self.y,
+            'status': self.status.value
         }

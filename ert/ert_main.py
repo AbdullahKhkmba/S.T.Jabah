@@ -92,8 +92,8 @@ async def main():
         await asyncio.sleep(5)  # Send every 5 seconds
 
 if __name__ == "__main__":
-    # Initialize Unit Service
-    unit_service = UnitService()
+    # Initialize Unit Service with the connected communication channel
+    unit_service = UnitService(communication_channel=ert_comms)
     
     # Create Flask app with ERT API
     app = Flask(__name__)
