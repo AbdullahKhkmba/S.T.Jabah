@@ -1,22 +1,14 @@
 """Business logic for ERT unit operations"""
 
-from ert.repository.unit_repository import UnitRepository
-from ert.service.path_service import PathService
-from communication import CommunicationChannel
+import json
+from random import random
 
 
 class UnitService:
     """Service layer for ERT unit operations"""
     
-    def __init__(
-        self,
-        unit_repository: UnitRepository,
-        path_service: PathService,
-        communication_channel: CommunicationChannel
-    ):
-        self.unit_repository = unit_repository
-        self.path_service = path_service
-        self.communication_channel = communication_channel
+    def __init__(self):
+        pass
     
     def acknowledge_incident(self, unit_id: str, incident_id: str):
         """
@@ -28,7 +20,7 @@ class UnitService:
         """
         pass
     
-    def update_unit_location(self, unit_id: str, coordinates: tuple):
+    def update_gps_location(self):
         """
         Update unit location and stream to Control Room
         
@@ -36,7 +28,16 @@ class UnitService:
             unit_id: ID of the ERT unit
             coordinates: Tuple of (x, y) GPS coordinates
         """
-        pass
+        # generate random coordinates for simulation
+        x = random() * 100
+        y = random() * 100
+        print(f"Updated GPS location: ({x:.2f}, {y:.2f})")
+        with open("ert/unit_info.json", "r") as f:
+            unit_info = json.load(f)
+            unit_info["x"] = x
+            unit_info["y"] = y
+        with open("ert/unit_info.json", "w") as f:
+            json.dump(unit_info, f, indent=4)
     
     def resolve_incident(self, unit_id: str, incident_id: str):
         """

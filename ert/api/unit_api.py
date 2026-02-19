@@ -1,6 +1,6 @@
 """API handlers for ERT unit endpoints"""
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, json, request, jsonify
 import logging
 
 from ert.service.unit_service import UnitService
@@ -14,4 +14,34 @@ def init_ert_api(unit_service: UnitService):
     ert_bp.unit_service = unit_service
     return ert_bp
 
+@ert_bp.route('/unit/location', methods=['GET'])
+def get_unit_location():
+    try:
+        with open("ert/unit_info.json", "r") as f:
+            unit_info = json.load(f)
+            location = {
+                "x": unit_info["x"],
+                "y": unit_info["y"]
+            }
+        return jsonify(location), 200
+    except Exception as e:
+        logger.error(f"Error retrieving unit location: {str(e)}")
+        return jsonify({
+            'error': 'Internal server error'
+        }), 500
 
+@ert_bp.route('/incident/location', methods=['GET'])
+def get_incident_location():
+    try:
+        with open("ert/unit_info.json", "r") as f:
+            unit_info = json.load(f)
+            location = {
+                "x": unit_info["assigned_incident"]["x"],
+                "y": unit_info["assigned_incident"]["y"]
+            }
+        return jsonify(location), 200
+    except Exception as e:
+        logger.error(f"Error retrieving incident location: {str(e)}")
+        return jsonify({
+            'error': 'Internal server error'
+        }), 500
