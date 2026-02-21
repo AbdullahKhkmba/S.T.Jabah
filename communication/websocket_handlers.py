@@ -6,6 +6,8 @@ the communication layer can subscribe to them directly.
 from control_room.model.incident import IncidentStatus
 from typing import Any
 
+from control_room.model.unit import UnitStatus
+
 class WebSocketHandlers:
     def __init__(self, incident_service, incident_repository, unit_service=None):
         self.incident_service = incident_service
@@ -22,9 +24,7 @@ class WebSocketHandlers:
             try:
                 unit = self.unit_service.get_unit_by_id(ert_id)
                 if unit:
-                    unit.x = x
-                    unit.y = y
-                    self.unit_service.update_unit(unit)
+                    self.unit_service.update_unit(ert_id, x, y)
             except Exception as e:
                 print(f"[Control Room] ❌ Failed to update location for {ert_id}: {e}")
 
@@ -56,6 +56,37 @@ class WebSocketHandlers:
 
     async def handle_resolution(self, data: dict):
         print(f"[Control Room] 🎉 Resolution: {data}")
+        # the data contains ert_id only we can use it to update the incident status to resolved
+        # first update the unit status to resolved in the unit repository
+    
+        ert_id = data.get("ert_id")
+        if self.unit_service:
+            try:
+                unit = self.unit_service.get_unit_by_id(ert_id)
+                if unit:
+                    self.unit_service.resolve_unit(ert_id)
+            except Exception as e:
+                print(f"[Control Room] ❌ Failed to update unit status for {ert_id}: {e}")
+
+        # Second iterate over all units assigned to open incident and if all are resolved then update the incident status to resolved as well
+        # otherwise keep it "in progress"
+        open_incidents = self.incident_service.get_open_incidents()
+        for incident in open_incidents:
+            if ert_id in incident.assigned_units:
+                # Check if all assigned units are resolved
+                all_resolved = True
+                for assigned_ert_id in incident.assigned_units:
+                    assigned_unit = self.unit_service.get_unit_by_id(assigned_ert_id)
+                    if assigned_unit and assigned_unit.status != UnitStatus.RESOLVED:
+                        all_resolved = False
+                        break
+                # Update incident status accordingly
+                if all_resolved:
+                    incident.status = IncidentStatus.RESOLVED
+                    self.incident_repository.update(incident)
+                    print(f"[Control Room] 🎉 Incident {incident.id} resolved (all units resolved)")
+                else:
+                    print(f"[Control Room] 🚧 Incident {incident.id} still in progress (some units not resolved)")
 
     async def handle_disconnection(self, ert_id: str):
         """

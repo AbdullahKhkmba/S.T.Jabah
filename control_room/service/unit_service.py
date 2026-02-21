@@ -1,9 +1,10 @@
 """Business logic for Control Room incident management"""
 
+import json
 import uuid
 from control_room.model.incident import Incident, IncidentStatus
 from control_room.repository.in_memory_unit_repository import InMemoryUnitRepository
-from control_room.model.unit import Unit
+from control_room.model.unit import Unit, UnitStatus
 from communication.websocket_communication import WebSocketCommunication
 from typing import List
 
@@ -85,3 +86,23 @@ class UnitService:
         """
         return self.unit_repository.delete(unit_id)
     
+    def resolve_unit(self, unit_id: str) -> Unit:
+        """
+        Mark a unit as resolved in the control room
+        
+        Args:
+            unit_id: ID of the unit to resolve
+        
+        Returns:
+            The updated unit object with resolved status
+        
+        Raises:
+            ValueError: If unit with given ID does not exist
+        """
+        unit = self.unit_repository.get_by_id(unit_id)
+        if not unit:
+            raise ValueError(f"Unit with ID {unit_id} does not exist.")
+        
+        unit.status = UnitStatus.RESOLVED
+        updated_unit = self.unit_repository.update(unit)
+        return updated_unit

@@ -2,6 +2,7 @@
 
 from flask import Blueprint, json, request, jsonify
 import logging
+import asyncio
 
 from ert.service.unit_service import UnitService
 
@@ -42,6 +43,28 @@ def get_incident_location():
         return jsonify(location), 200
     except Exception as e:
         logger.error(f"Error retrieving incident location: {str(e)}")
+        return jsonify({
+            'error': 'Internal server error'
+        }), 500
+    
+@ert_bp.route('/incident/resolve', methods=['PUT'])
+def resolve_incident():
+    try:
+        # check that an incident is assigned to the unit before trying to resolve it
+        with open("ert/unit_info.json", "r") as f:
+            unit_info = json.load(f)
+            if unit_info["assigned_incident"] is None:
+                return jsonify({
+                    'error': 'No incident assigned to this unit'
+                }), 400
+            
+        asyncio.run(ert_bp.unit_service.resolve_incident())
+
+        return jsonify({
+            'message': 'Incident resolved successfully'
+        }), 200
+    except Exception as e:
+        logger.error(f"Error resolving incident: {str(e)}")
         return jsonify({
             'error': 'Internal server error'
         }), 500
