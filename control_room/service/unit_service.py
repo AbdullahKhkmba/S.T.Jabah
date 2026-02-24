@@ -106,3 +106,25 @@ class UnitService:
         unit.status = UnitStatus.RESOLVED
         updated_unit = self.unit_repository.update(unit)
         return updated_unit
+
+    def assign_incident_to_unit(self, unit_id: str, incident_id: str) -> Unit:
+        """
+        Assign an incident to a unit
+        
+        Args:
+            unit_id: ID of the unit
+            incident_id: ID of the incident to assign
+        
+        Returns:
+            The updated unit object
+        
+        Raises:
+            ValueError: If unit with given ID does not exist
+        """
+        unit = self.unit_repository.get_by_id(unit_id)
+        if not unit:
+            raise ValueError(f"Unit with ID {unit_id} does not exist.")
+        
+        unit.assigned_incident = incident_id
+        updated_unit = self.unit_repository.update(unit)
+        return updated_unit
