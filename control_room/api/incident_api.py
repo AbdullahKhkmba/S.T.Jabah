@@ -263,8 +263,3 @@ def get_units_for_open_incident():
         return jsonify({
             'error': 'Internal server error'
         }), 500
-@control
-@control_room_bp.route('/cr/units', methods=['GET'])
-def get_units():
-    try:
-        all_units = control
