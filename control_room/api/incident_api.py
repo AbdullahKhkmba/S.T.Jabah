@@ -44,7 +44,8 @@ def list_incidents():
         
     except Exception as e:
         logger.error(f"Error listing incidents: {str(e)}")
-    
+        return jsonify({'error': 'Internal server error'}), 500
+
 @control_room_bp.route('/incidents', methods=['POST'])
 def create_incident():
     try:
@@ -53,6 +54,8 @@ def create_incident():
             return jsonify({
                 'error': 'Invalid JSON payload'
             }), 400
+        
+        print(f"📥 RECEIVED DATA: {data}")  # DEBUG
         
         # Give error if the user try to create a new incident while there is still a one that is not resolved
         open_incidents = control_room_bp.incident_service.get_open_incidents()
@@ -82,15 +85,23 @@ def create_incident():
                 'error': 'Invalid y coordinate'
             }), 400
         
+        print(f"📤 Creating incident at ({data['x']}, {data['y']})")  # DEBUG
+        
         incident = control_room_bp.incident_service.create_incident(data['x'], data['y'])
+        print(f"✅ Incident created: {incident.id}")  # DEBUG
+        
         return jsonify(incident.to_dict()), 201
 
     except Exception as e:
+        print(f"❌ ERROR: {str(e)}")  # DEBUG
+        print(f"❌ ERROR TYPE: {type(e).__name__}")  # DEBUG
+        import traceback
+        print(f"❌ TRACEBACK: {traceback.format_exc()}")  # DEBUG
         logger.error(f"Error creating incident: {str(e)}")
         return jsonify({
             'error': 'Internal server error'
         }), 500
-    
+
 @control_room_bp.route('/incidents/<incident_id>', methods=['DELETE'])
 def delete_incident(incident_id):
     """
@@ -209,7 +220,7 @@ def dispatch_incident():
     except Exception as e:
         logger.error(f"Error dispatching incident: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
-    
+
 # Add endpoint that return running incident (it is always one or zero)
 # This endpoint will be used by control room frontend to show current location of the incident and assigned units
 @control_room_bp.route('/incidents/open', methods=['GET'])
@@ -228,7 +239,7 @@ def get_open_incidents():
         return jsonify({
             'error': 'Internal server error'
         }), 500
-    
+
 # Add endpoint to get assigned units info for the running incident (it is always one or zero)
 @control_room_bp.route('/units/open_incident', methods=['GET'])
 def get_units_for_open_incident():
@@ -252,3 +263,8 @@ def get_units_for_open_incident():
         return jsonify({
             'error': 'Internal server error'
         }), 500
+@control
+@control_room_bp.route('/cr/units', methods=['GET'])
+def get_units():
+    try:
+        all_units = control
