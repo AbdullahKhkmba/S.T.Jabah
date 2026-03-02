@@ -35,9 +35,6 @@ class UnitService:
             y=y,
         )
         created_unit = self.unit_repository.create(unit)
-
-        # Notify ERT units about the new unit
-        # self.communication_channel.notify_units_new_unit(created_unit)
         
         return created_unit
     
@@ -113,7 +110,7 @@ class UnitService:
         if incident_id:
             incident = self.incident_service.get_incident_by_id(incident_id)
             if incident:
-                all_units = self.unit_service.get_all_units()
+                all_units = self.get_all_units()
                 assigned_units = [
                     u for u in all_units
                     if u.assigned_incident == incident_id
@@ -152,8 +149,7 @@ class UnitService:
         updated_unit = self.unit_repository.update(unit)
 
         incident = self.incident_service.get_incident_by_id(incident_id)
-        if incident and incident.status == IncidentStatus.DISPATCHED:
-            incident.status = IncidentStatus.ACKNOWLEDGED
-            self.incident_repository.update(incident)
+        if incident is not None:
+            self.incident_service.update_incident_status(incident_id, IncidentStatus.ACKNOWLEDGED)
 
         return updated_unit

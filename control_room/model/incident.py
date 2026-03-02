@@ -8,9 +8,9 @@ class IncidentStatus(Enum):
     """Incident status enumeration"""
     CREATED = "created"
     DISPATCHED = "dispatched"
+    ACKNOWLEDGED = "acknowledged"
     IN_PROGRESS = "in_progress"
     RESOLVED = "resolved"
-    PENDING = "pending"
 
 class Incident:
     """Incident model"""

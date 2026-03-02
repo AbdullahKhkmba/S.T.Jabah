@@ -1,5 +1,6 @@
 """API handlers for ERT unit endpoints"""
 
+from control_room.model import incident
 from flask import Blueprint, json, request, jsonify
 import logging
 import asyncio
@@ -105,9 +106,8 @@ def get_incident_location():
         }), 500
     
 @ert_bp.route('/incident/resolve', methods=['PUT'])
-def resolve_incident():
+async def resolve_incident():   
     try:
-        # check that an incident is assigned to the unit before trying to resolve it
         with open("ert/unit_info.json", "r") as f:
             unit_info = json.load(f)
             if unit_info["assigned_incident"] is None:
@@ -115,13 +115,14 @@ def resolve_incident():
                     'error': 'No incident assigned to this unit'
                 }), 400
             
-        asyncio.run(ert_bp.unit_service.resolve_incident())
+        # We MUST await the service call because it is an async def
+        await ert_bp.unit_service.resolve_assigned_incident(unit_info["id"])
+        return jsonify({"message": "Incident resolved successfully"}), 200
 
-        return jsonify({
-            'message': 'Incident resolved successfully'
-        }), 200
+    except ValueError as e:
+        # Catch the "Incident does not exist" error from your service
+        return jsonify({'error': str(e)}), 404
+
     except Exception as e:
         logger.error(f"Error resolving incident: {str(e)}")
-        return jsonify({
-            'error': 'Internal server error'
-        }), 500
+        return jsonify({'error': 'Internal server error'}), 500
