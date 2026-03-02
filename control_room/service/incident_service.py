@@ -1,6 +1,7 @@
 """Business logic for Control Room incident management"""
 
 import uuid
+from control_room.model import incident
 from control_room.repository.in_memory_incident_repository import InMemoryIncidentRepository
 from control_room.model.incident import Incident, IncidentStatus
 from communication.websocket_communication import WebSocketCommunication
@@ -45,7 +46,7 @@ class IncidentService:
         """
         return self.incident_repository.get_by_id(incident_id)
 
-    def update_incident(self, incident_id: str, x: float, y: float):
+    async def update_incident(self, incident_id: str, x: float, y: float):
         """
         Update incident coordinates
 
@@ -61,6 +62,13 @@ class IncidentService:
         incident.x = x
         incident.y = y
         updated_incident = self.incident_repository.update(incident)
+
+        # Notify ERT units about the updated incident
+        await self.communication_channel.publish(
+            topic="new_incident",
+            message=updated_incident.to_dict()
+        )
+
         return updated_incident
         
     def get_all_incidents(self) -> List[Incident]:
@@ -69,7 +77,7 @@ class IncidentService:
         """
         return self.incident_repository.get_all()
     
-    def delete_incident(self, incident_id: str) -> bool:
+    async def delete_incident(self, incident_id: str) -> bool:
         """
         Delete an incident from the system
         
@@ -79,6 +87,13 @@ class IncidentService:
         Returns:
             True if incident was deleted successfully, False if incident was not found
         """
+        # incident = self.incident_repository.get_by_id(incident_id)
+
+        # if incident is not None:
+        #     await self.communication_channel.publish(
+        #         topic="new_incident",
+        #         message={}
+        #     )
         return self.incident_repository.delete(incident_id)
     
     def get_open_incidents(self) -> List[Incident]:
@@ -114,7 +129,6 @@ class IncidentService:
 
         return True
     
-# add method to update incident status when resolved by ERT unit
     def resolve_incident(self, incident_id: str):
         """
         Mark an incident as resolved
