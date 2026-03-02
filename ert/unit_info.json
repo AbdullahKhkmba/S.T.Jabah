@@ -1,15 +1,7 @@
 {
-  "assigned_incident": {
-    "assigned_units": [],
-    "created_at": "2026-03-01T18:12:11.124533",
-    "id": "b456cb1d-5df1-40cf-a6f9-ace6dc66625b",
-    "resolved_at": null,
-    "status": "created",
-    "x": 0.5164,
-    "y": 0.4663
-  },
+  "assigned_incident": null,
   "id": "ERT-001",
   "status": "dispatched",
-  "x": 100,
-  "y": 200
+  "x": 0.5511,
+  "y": 0.4667
 }
