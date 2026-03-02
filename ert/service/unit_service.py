@@ -29,7 +29,7 @@ class UnitService:
         with open("ert/unit_info.json", "w") as f:
             json.dump(unit_info, f, indent=4)
     
-    async def resolve_incident(self):
+    async def resolve_assigned_incident(self, unit_id: str):
         """
         1- Update unit status to resolved in the ERT repository (unit_info.json)
         2- Notify Control Room about the resolution so it can update the incident status in its
@@ -38,6 +38,7 @@ class UnitService:
             unit_id: ID of the ERT unit
             incident_id: ID of the incident
         """
+        print(f"[UnitService] Resolving incident assigned to unit {unit_id}...")
         with open("ert/unit_info.json", "r") as f:
             unit_info = json.load(f)
         

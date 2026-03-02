@@ -72,7 +72,7 @@ class IncidentService:
                 topic="new_incident",
                 message={}
             )
-            
+
         return self.incident_repository.delete(incident_id)
 
     def get_open_incidents(self) -> List[Incident]:
@@ -87,8 +87,10 @@ class IncidentService:
         incident = self.incident_repository.get_by_id(incident_id)
         if incident is None:
             raise ValueError(f"Incident with ID {incident_id} does not exist.")
-        incident.status = IncidentStatus.DISPATCHED
-        self.incident_repository.update(incident)
+        
+        # Notify ERT units about the incident and wait for acknowledgment
+        self.update_incident_status(incident_id, IncidentStatus.DISPATCHED)
+        
         await self.communication_channel.publish(
 
              topic="incident",
@@ -97,6 +99,27 @@ class IncidentService:
 
         return True
     
+    # Add method to update incident status in general
+    def update_incident_status(self, incident_id: str, new_status: IncidentStatus):
+        """
+        Update the status of an incident
+        
+        Args:
+            incident_id: ID of the incident
+            new_status: New status to set
+            
+        Returns:
+            Updated incident object
+        """
+        incident = self.incident_repository.get_by_id(incident_id)
+        if not incident:
+            raise ValueError(f"Incident with ID {incident_id} does not exist.")
+        
+        incident.status = new_status
+        updated_incident = self.incident_repository.update(incident)
+        
+        return updated_incident
+
     def resolve_incident(self, incident_id: str):
         """
         Mark an incident as resolved
