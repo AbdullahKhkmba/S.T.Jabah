@@ -5,7 +5,7 @@ from control_room.model import incident
 from control_room.repository.in_memory_incident_repository import InMemoryIncidentRepository
 from control_room.model.incident import Incident, IncidentStatus
 from communication.websocket_communication import WebSocketCommunication
-
+from typing import List
 
 class IncidentService:
     def __init__(
@@ -92,8 +92,7 @@ class IncidentService:
         self.update_incident_status(incident_id, IncidentStatus.DISPATCHED)
         
         await self.communication_channel.publish(
-
-             topic="incident",
+            topic="active_incident",
             message=incident.to_dict()
         )
 

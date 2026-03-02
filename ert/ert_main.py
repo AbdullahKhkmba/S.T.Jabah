@@ -83,17 +83,13 @@ async def main(unit_service: UnitService):
     print(f"[ERT-{ert_id}] Connected and registered with hub")
 
     # Subscribe
-    await ert_comms.subscribe("incident", on_new_incident)
+    await ert_comms.subscribe("active_incident", on_new_incident)
 
     print(f"[ERT-{ert_id}] Subscribed to incident notifications")
     
     # Comment out the simulation loop
 
     while True:
-        # Simulate GPS coordinates
-        # unit_service = UnitService()
-        # unit_service.update_gps_location()
-
         # read x and y from unit_info.json file
         with open("ert/unit_info.json", "r") as f:
             unit_info = json.load(f)
