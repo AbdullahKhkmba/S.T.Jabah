@@ -17,16 +17,16 @@ class Incident:
 
     def __init__(
         self, 
-        x: float,
-        y: float,
+        lat: float,
+        lng: float,
         status: IncidentStatus = IncidentStatus.CREATED,
         created_at: Optional[datetime] = None,
         resolved_at: Optional[datetime] = None,
         id: Optional[str] = None,
     ):
         self.id = id
-        self.x = x
-        self.y = y
+        self.lat = lat
+        self.lng = lng
         self.status = status
         self.created_at = created_at
         self.resolved_at = resolved_at
@@ -35,8 +35,8 @@ class Incident:
         """Convert incident to dictionary for JSON serialization"""
         return {
             'id': self.id,
-            'x': self.x,
-            'y': self.y,
+            'lat': self.lat,
+            'lng': self.lng,
             'status': self.status.value,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,

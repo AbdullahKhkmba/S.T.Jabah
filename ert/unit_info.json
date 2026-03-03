@@ -1,7 +1,7 @@
 {
     "assigned_incident": null,
     "id": "ERT-001",
-    "status": "resolved",
-    "x": 0.4816,
-    "y": 0.4981
+    "lat": 30.070495008791877,
+    "lng": 31.50113837468233,
+    "status": "resolved"
 }

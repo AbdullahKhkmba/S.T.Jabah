@@ -16,14 +16,14 @@ class Unit:
     def __init__(
         self, 
         id: str,
-        x: float,
-        y: float,
+        lat: float,
+        lng: float,
         status: 'UnitStatus' = None,
         assigned_incident: Optional[str] = None
     ):
         self.id = id
-        self.x = x
-        self.y = y
+        self.lat = lat
+        self.lng = lng
         self.status = status or UnitStatus.ACTIVE
         self.assigned_incident = assigned_incident
 
@@ -31,8 +31,8 @@ class Unit:
         """Convert unit to dictionary for JSON serialization"""
         return {
             'id': self.id,
-            'x': self.x,
-            'y': self.y,
+            'lat': self.lat,
+            'lng': self.lng,
             'status': self.status.value,
             'assigned_incident': self.assigned_incident
         }

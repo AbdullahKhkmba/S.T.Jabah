@@ -22,8 +22,8 @@ def get_unit_location():
         with open("ert/unit_info.json", "r") as f:
             unit_info = json.load(f)
             location = {
-                "x": unit_info["x"],
-                "y": unit_info["y"]
+                "lat": unit_info["lat"],
+                "lng": unit_info["lng"]
             }
         return jsonify(location), 200
     except Exception as e:
@@ -53,32 +53,31 @@ def update_unit_location():
                 'error': 'Invalid JSON payload'
             }), 400
 
-        if 'x' not in data:
+        if 'lat' not in data:
             return jsonify({
-                'error': 'Missing x coordinate'
+                'error': 'Missing latitude coordinate'
             }), 400
         
-        if not isinstance(data['x'], (int, float)):
+        if not isinstance(data['lat'], (int, float)):
             return jsonify({
-                'error': 'Invalid x coordinate'
+                'error': 'Invalid latitude coordinate'
             }), 400
 
-        if 'y' not in data:
+        if 'lng' not in data:
             return jsonify({
-                'error': 'Missing y coordinate'
+                'error': 'Missing longitude coordinate'
             }), 400
         
-        if not isinstance(data['y'], (int, float)):
+        if not isinstance(data['lng'], (int, float)):
             return jsonify({
-                'error': 'Invalid y coordinate'
+                'error': 'Invalid longitude coordinate'
             }), 400
 
         with open("ert/unit_info.json", "r") as f:
             unit_info = json.load(f)
 
-        unit_info["x"] = data["x"]
-        unit_info["y"] = data["y"]
-
+        unit_info["lat"] = data["lat"]
+        unit_info["lng"] = data["lng"]
         with open("ert/unit_info.json", "w") as f:
             json.dump(unit_info, f, indent=2)
 
@@ -95,8 +94,8 @@ def get_incident_location():
         with open("ert/unit_info.json", "r") as f:
             unit_info = json.load(f)
             location = {
-                "x": unit_info["assigned_incident"]["x"],
-                "y": unit_info["assigned_incident"]["y"]
+                "lat": unit_info["assigned_incident"]["lat"],
+                "lng": unit_info["assigned_incident"]["lng"]
             }
         return jsonify(location), 200
     except Exception as e:

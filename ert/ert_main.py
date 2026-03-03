@@ -59,8 +59,8 @@ async def on_new_incident(data):
     acknowledgment = {
         "ert_id": ert_id,
         "incident_id": incident_id,
-        "x": data.get("x", 100),
-        "y": data.get("y", 200),
+        "lat": data.get("lat", 100),
+        "lng": data.get("lng", 200),
         "message": "Incident received successfully. ERT unit dispatched.",
         "status": "acknowledged"
     }
@@ -90,46 +90,22 @@ async def main(unit_service: UnitService):
     # Comment out the simulation loop
 
     while True:
-        # read x and y from unit_info.json file
+        # read lat and lng from unit_info.json file
         with open("ert/unit_info.json", "r") as f:
             unit_info = json.load(f)
-            x = unit_info["x"]
-            y = unit_info["y"]
+            lat = unit_info["lat"]
+            lng = unit_info["lng"]
 
         location_data = {
             "ert_id": ert_id,
-            "x": x,
-            "y": y
+            "lat": lat,
+            "lng": lng
         }   
         
         print(f"[ERT-{ert_id}] Sending Location...")
         await ert_comms.publish("location", location_data)
         
         await asyncio.sleep(5)  # Send every 5 seconds
-
-    # GPS LOOP
-    while True:
-        # Update simulated GPS
-        unit_service.update_gps_location()
-
-        # Read updated coordinates
-        with open("ert/unit_info.json", "r") as f:
-            unit_info = json.load(f)
-            x = unit_info["x"]
-            y = unit_info["y"]
-
-        location_data = {
-            "ert_id": ert_id,
-            "x": x,
-            "y": y
-        }
-
-        print(f"[ERT-{ert_id}] 📍 Sending Location: ({x}, {y})")
-
-        await ert_comms.publish("location", location_data)
-
-        await asyncio.sleep(5)
-
 
 # ---------------- Application Entry ----------------
 if __name__ == "__main__":

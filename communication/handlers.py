@@ -15,13 +15,13 @@ class WebSocketHandlers:
     async def handle_location(self, data: dict):
         print(f"[Control Room] \U0001f4cd Vehicle Location: {data}")
         ert_id = data.get("ert_id")
-        x = data.get("x")
-        y = data.get("y")
+        lat = data.get("lat")
+        lng = data.get("lng")
         if self.unit_service:
             try:
                 unit = self.unit_service.get_unit_by_id(ert_id)
                 if unit:
-                    self.unit_service.update_unit(ert_id, x, y)
+                    self.unit_service.update_unit(ert_id, lat, lng)
             except Exception as e:
                 print(f"[Control Room] \u274c Failed to update location for {ert_id}: {e}")
 
@@ -35,7 +35,7 @@ class WebSocketHandlers:
             try:
                 unit = self.unit_service.get_unit_by_id(ert_id)
                 if not unit:
-                    self.unit_service.create_unit(ert_id, data.get("x"), data.get("y"))
+                    self.unit_service.create_unit(ert_id, data.get("lat"), data.get("lng"))
             except Exception as e:
                 print(f"[Control Room] \u274c Failed to create ERT Unit: {ert_id} ({e})")
 

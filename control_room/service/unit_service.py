@@ -18,21 +18,18 @@ class UnitService:
         self.incident_service = incident_service
         self.communication_channel = communication_channel
     
-    def create_unit(self,id, x, y: float) -> Unit:
+    def create_unit(self,id, lat: float, lng: float) -> Unit:
         """
         Create a new unit in the system
         
         Args:
-            x: X coordinate
-            y: Y coordinate
-        
-        Returns:
-            Created unit object
+            lat: Latitude coordinate
+            lng: Longitude coordinate
         """
         unit = Unit(
             id=id,
-            x=x,
-            y=y,
+            lat=lat,
+            lng=lng,
         )
         created_unit = self.unit_repository.create(unit)
         
@@ -50,21 +47,21 @@ class UnitService:
         """
         return self.unit_repository.get_by_id(unit_id)
     
-    def update_unit(self, unit_id: str, x: float, y: float):
+    def update_unit(self, unit_id: str, lat: float, lng: float):
         """
         Update unit coordinates
 
         Args:
             unit_id: ID of the unit
-            x: New x coordinate
-            y: New y coordinate
+            lat: New latitude coordinate
+            lng: New longitude coordinate
         """
         unit = self.unit_repository.get_by_id(unit_id)
         if not unit:
             raise ValueError(f"Unit with ID {unit_id} does not exist.")
         
-        unit.x = x
-        unit.y = y
+        unit.lat = lat
+        unit.lng = lng
         updated_unit = self.unit_repository.update(unit)
         return updated_unit
         

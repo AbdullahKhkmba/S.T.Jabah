@@ -66,29 +66,29 @@ def create_incident():
                 'open_incidents': [incident.to_dict() for incident in open_incidents]
             }), 400
         
-        if 'x' not in data:
+        if 'lat' not in data:
             return jsonify({
-                'error': 'Missing x coordinate'
+                'error': 'Missing latitude'
             }), 400
         
-        if not isinstance(data['x'], (int, float)):
+        if not isinstance(data['lat'], (int, float)):
             return jsonify({
-                'error': 'Invalid x coordinate'
+                'error': 'Invalid latitude'
             }), 400
 
-        if 'y' not in data:
+        if 'lng' not in data:
             return jsonify({
-                'error': 'Missing y coordinate'
+                'error': 'Missing longitude'
             }), 400
         
-        if not isinstance(data['y'], (int, float)):
+        if not isinstance(data['lng'], (int, float)):
             return jsonify({
-                'error': 'Invalid y coordinate'
+                'error': 'Invalid longitude'
             }), 400
         
-        print(f"📤 Creating incident at ({data['x']}, {data['y']})")  # DEBUG
+        print(f"📤 Creating incident at ({data['lat']}, {data['lng']})")  # DEBUG
         
-        incident = control_room_bp.incident_service.create_incident(data['x'], data['y'])
+        incident = control_room_bp.incident_service.create_incident(data['lat'], data['lng'])
         print(f"✅ Incident created: {incident.id}")  # DEBUG
         
         return jsonify(incident.to_dict()), 201
@@ -144,32 +144,32 @@ async def update_incident(incident_id):
             'error': 'Invalid JSON payload'
         }), 400
     
-    if 'x' not in data:
+    if 'lat' not in data:
         return jsonify({
-            'error': 'Missing x coordinate'
+            'error': 'Missing latitude'
         }), 400
     
-    if not isinstance(data['x'], (int, float)):
+    if not isinstance(data['lat'], (int, float)):
         return jsonify({
-            'error': 'Invalid x coordinate'
+            'error': 'Invalid latitude'
         }), 400
 
-    if 'y' not in data:
+    if 'lng' not in data:
         return jsonify({
-            'error': 'Missing y coordinate'
+            'error': 'Missing longitude'
         }), 400
     
-    if not isinstance(data['y'], (int, float)):
+    if not isinstance(data['lng'], (int, float)):
         return jsonify({
-            'error': 'Invalid y coordinate'
+            'error': 'Invalid longitude'
         }), 400
     
     try:
         # We MUST await the service call because it is an async def
         incident = await control_room_bp.incident_service.update_incident(
             incident_id, 
-            data['x'], 
-            data['y']
+            data['lat'], 
+            data['lng']
         )
         return jsonify(incident.to_dict()), 200
 
