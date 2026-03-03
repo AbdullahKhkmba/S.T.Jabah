@@ -16,10 +16,10 @@ class IncidentService:
         self.incident_repository = incident_repository
         self.communication_channel = communication_channel
 
-    def create_incident(self, x: float, y: float) -> Incident:
+    def create_incident(self, lat: float, lng: float) -> Incident:
         incident = Incident(
-            x=x,
-            y=y,
+            lat=lat,
+            lng=lng,
             status=IncidentStatus.CREATED
         )
         created_incident = self.incident_repository.create(incident)
@@ -28,22 +28,22 @@ class IncidentService:
     def get_incident_by_id(self, incident_id: str):
         return self.incident_repository.get_by_id(incident_id)
 
-    async def update_incident(self, incident_id: str, x: float, y: float):
+    async def update_incident(self, incident_id: str, lat: float, lng: float):
         """
         Update incident coordinates
 
         Args:
             incident_id: ID of the incident
-            x: New x coordinate
-            y: New y coordinate
+            lat: New latitude coordinate
+            lng: New longitude coordinate
         """
         incident = self.incident_repository.get_by_id(incident_id)
 
         if not incident:
             raise ValueError(f"Incident with ID {incident_id} does not exist.")
         
-        incident.x = x
-        incident.y = y
+        incident.lat = lat
+        incident.lng = lng
         updated_incident = self.incident_repository.update(incident)
 
         if incident.status != IncidentStatus.CREATED:

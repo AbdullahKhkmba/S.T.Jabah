@@ -16,16 +16,16 @@ class UnitService:
         
         Args:
             unit_id: ID of the ERT unit
-            coordinates: Tuple of (x, y) GPS coordinates
+            coordinates: Tuple of (lat, lng) GPS coordinates
         """
         # generate random coordinates for simulation
-        x = random() * 100
-        y = random() * 100
-        print(f"Updated GPS location: ({x:.2f}, {y:.2f})")
+        lat = random() * 100
+        lng = random() * 100
+        print(f"Updated GPS location: ({lat:.2f}, {lng:.2f})")
         with open("ert/unit_info.json", "r") as f:
             unit_info = json.load(f)
-            unit_info["x"] = x
-            unit_info["y"] = y
+            unit_info["lat"] = lat
+            unit_info["lng"] = lng
         with open("ert/unit_info.json", "w") as f:
             json.dump(unit_info, f, indent=4)
     
