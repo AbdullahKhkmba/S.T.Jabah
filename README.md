@@ -773,6 +773,7 @@ lsof -ti:5002 | xargs kill -9  # ERT
 lsof -ti:8765 | xargs kill -9  # Hub Server
 ```
 
+
 ### WebSocket Connection Refused
 - Ensure hub server is running on port 8765
 - Check firewall settings
